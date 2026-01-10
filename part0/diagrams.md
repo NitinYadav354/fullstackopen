@@ -1,3 +1,4 @@
+## 0.4
 ```mermaid
 sequenceDiagram
     participant browser
@@ -40,7 +41,7 @@ sequenceDiagram
     Note right of browser: Browser renders updated notes list using DOM
 ```
 
- 
+## 0.5
 ```mermaid
 sequenceDiagram
     participant browser
@@ -72,7 +73,7 @@ sequenceDiagram
 ```
 
 
- 
+## 0.6 
 ```mermaid
 sequenceDiagram
     participant browser

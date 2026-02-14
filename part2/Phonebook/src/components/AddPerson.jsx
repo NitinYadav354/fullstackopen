@@ -9,6 +9,7 @@ const AddPerson = (props) => {
           <button type="submit">add</button>
         </div>
       </form>
+      
     )
 }
 

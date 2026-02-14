@@ -3,13 +3,16 @@ import Filter from './components/Filter.jsx'
 import ShowPerson from './components/ShowPerson.jsx'
 import AddPerson from './components/AddPerson.jsx'
 import services from './components/services.jsx'
+import Notification from './components/Notification.jsx'
 
 const App = () => {
 
+  const [isVisible, setIsVisible] = useState(false)
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
+  const [showName, setShowName] = useState('')
 
   useEffect(() => {
     services.getALL()
@@ -55,13 +58,20 @@ const App = () => {
     })
       .then(response => {
         setPersons(persons.concat(response.data))
+        setShowName(newName)
         setNewName('')
         setNewNumber('')
+        setIsVisible(true)
+        setTimeout(() => {
+          setIsVisible(false)
+        }, 5000)
       })
   }
 
   return (
     <div>
+      <h1>Phonebook</h1>
+      <Notification name={showName} isVisible={isVisible} />
       <h1>Filter shown with</h1>
       <Filter search={search} handleSearchChange={handleSearchChange} />
       <h2>Phonebook</h2>

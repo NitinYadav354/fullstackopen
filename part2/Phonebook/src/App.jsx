@@ -7,12 +7,11 @@ import Notification from './components/Notification.jsx'
 
 const App = () => {
 
-  const [isVisible, setIsVisible] = useState(false)
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
-  const [showName, setShowName] = useState('')
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     services.getALL()
@@ -41,11 +40,19 @@ const App = () => {
   const handleSubmit = (event) => {
     event.preventDefault()
     if (persons.some(person => person.name === newName)) {
-      services.updateNotes(persons.find(person => person.name === newName).id, { number: newNumber })
+      const personToUpdate = persons.find(person => person.name === newName)
+      services.updateNotes(personToUpdate.id, { number: newNumber })
         .then(response => {
-          setPersons(persons.map(person => person.name === newName ? response.data : person))
+          setPersons(persons.map(person => person.id !== personToUpdate.id ? person : response.data))
+          setNotification({ message: `Updated ${newName}`, type: 'success' })
           setNewName('')
           setNewNumber('')
+          setTimeout(() => setNotification(null), 5000)
+        })
+        .catch(error => {
+          setNotification({ message: `Information of ${newName} has already been removed from server`, type: 'error' })
+          setPersons(persons.filter(p => p.id !== personToUpdate.id))
+          setTimeout(() => setNotification(null), 5000)
         })
       return
     }
@@ -58,20 +65,17 @@ const App = () => {
     })
       .then(response => {
         setPersons(persons.concat(response.data))
-        setShowName(newName)
+        setNotification({ message: `Added ${newName}`, type: 'success' })
         setNewName('')
         setNewNumber('')
-        setIsVisible(true)
-        setTimeout(() => {
-          setIsVisible(false)
-        }, 5000)
+        setTimeout(() => setNotification(null), 5000)
       })
   }
 
   return (
     <div>
       <h1>Phonebook</h1>
-      <Notification name={showName} isVisible={isVisible} />
+      <Notification notification={notification} />
       <h1>Filter shown with</h1>
       <Filter search={search} handleSearchChange={handleSearchChange} />
       <h2>Phonebook</h2>

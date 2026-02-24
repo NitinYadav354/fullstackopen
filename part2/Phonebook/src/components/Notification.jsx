@@ -1,24 +1,36 @@
 
-const Notification = ({ name, isVisible }) => {
-    if (name === null) {
-      console.log('Notification: name is null, returning null')
-      return null
-    }
+const Notification = ({ notification }) => {
+  if (!notification) {
+    return null
+  }
 
-    const notstyle = {
-      color: 'green',
-      background: 'lightgrey',
-      border: '2px solid green',
-      padding: '10px',
-      borderRadius: '5px',
-      display: isVisible ? 'block' : 'none'
-    
+  const baseStyle = {
+    background: 'lightgrey',
+    padding: '10px',
+    borderRadius: '5px',
+    marginBottom: '10px'
   }
-    return (
-      <div className="notification" style={notstyle}>
-        added {name}
-      </div>
-    )
+
+  const successStyle = {
+    color: 'green',
+    border: '2px solid green'
   }
+
+  const errorStyle = {
+    color: 'red',
+    border: '2px solid red'
+  }
+
+  const style = {
+    ...baseStyle,
+    ...(notification.type === 'error' ? errorStyle : successStyle)
+  }
+
+  return (
+    <div className="notification" style={style}>
+      {notification.message}
+    </div>
+  )
+}
 
 export default Notification

@@ -1,56 +1,96 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import services from './services.jsx'
 
-const filter = (props) => {
-    if (props.search == ''){
+const Filter = (props) => {
+    const [selectedIndex, setSelectedIndex] = useState(null)
+    const [weather, setWeather] = useState(null)
+
+    const filteredCountries = props.countries.filter((country) =>
+        country.name.common.toLowerCase().includes(props.search.toLowerCase())
+    )
+
+    const selectedCountry = filteredCountries.length === 1
+        ? filteredCountries[0]
+        : selectedIndex !== null
+            ? filteredCountries[selectedIndex]
+            : null
+
+    useEffect(() => {
+        if (selectedIndex !== null && selectedIndex >= filteredCountries.length) {
+            setSelectedIndex(null)
+        }
+    }, [filteredCountries.length, selectedIndex])
+
+    useEffect(() => {
+        setWeather(null)
+
+        if (!selectedCountry) {
+            return
+        }
+
+        const capital = Array.isArray(selectedCountry.capital)
+            ? selectedCountry.capital[0]
+            : selectedCountry.capital
+
+        if (!capital) {
+            return
+        }
+
+        services.getWeather(capital, selectedCountry.cca2)
+            .then((response) => {
+                setWeather(response.data)
+            })
+            .catch(() => {
+                setWeather(null)
+            })
+    }, [selectedCountry])
+
+    const showDetails = (country) => {
+        if (!country) {
+            return null
+        }
+
+        return (
+            <div>
+                <h2>{country.name.common}</h2>
+                <p>Capital: {Array.isArray(country.capital) ? country.capital.join(', ') : country.capital}</p>
+                <p>Area: {country.area}</p>
+                <h2>Languages:</h2>
+                <ul>
+                    {Object.values(country.languages || {}).map((language) => <li key={language}>{language}</li>)}
+                </ul>
+                <img src={country.flags.png} alt={country.flags.alt || `${country.name.common} flag`} />
+                <h1>Weather in {Array.isArray(country.capital) ? country.capital[0] : country.capital}</h1>
+                <p>Temperature: {weather?.main?.temp || 'No weather data available'} celcius</p>
+                <p>Wind Speed: {weather?.wind?.speed || 'No weather data available'} m/s</p>
+            </div>
+        )
+    }
+
+    if (props.search === '') {
         return null
     }
 
-    const [i, setI] = useState(null)
-    const showDetails = (i) => {
-        const c = filteredCountries[i]
-        if (i === null){
-            return null
-        }
-        services.getWeather(c.capital)
-        .then(response => {
-        const weather = response.data
-        console.log(weather)
-        })  
-        return (
-            <div>
-                <h2>{c.name.common}</h2>
-                <p>Capital: {c.capital}</p>
-                <p>Area: {c.area}</p>
-                <h2>Languages:</h2>
-                <ul>
-                    {Object.values(c.languages).map(language => <li key={language}>{language}</li>)}
-                </ul>
-                <img src= {c.flags.png} alt= {c.flags.alt} />
-                <p>Weather: {weather?.weather?.[0]?.description || 'No weather data available'}</p>
-                </div>
-        )
-    }
-
-    const filteredCountries = props.countries.filter(country => country.name.common.toLowerCase().includes(props.search.toLowerCase()))
-    if (filteredCountries.length > 10){
+    if (filteredCountries.length > 10) {
         return <div className="filter">Too many matches, specify another filter</div>
     }
-    if (filteredCountries.length === 1){
-        return (
-            showDetails(0)
-        )
+
+    if (filteredCountries.length === 1) {
+        return showDetails(filteredCountries[0])
     }
-    else{
-    return <div className="filter">
-        <ul>
-        {filteredCountries.map((country, i) => (
-          <li key={country.cca3}>{country.name.common} <button onClick={() => setI(i)}>show </button></li>
-        ))}
-      </ul>
-        {showDetails(i)}
-    </div>
-    }
+
+    return (
+        <div className="filter">
+            <ul>
+                {filteredCountries.map((country, index) => (
+                    <li key={country.cca3}>
+                        {country.name.common} <button onClick={() => setSelectedIndex(index)}>show</button>
+                    </li>
+                ))}
+            </ul>
+            {showDetails(selectedCountry)}
+        </div>
+    )
 }
 
-export default filter
+export default Filter

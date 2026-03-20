@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
-app.use(express.json())
+
+const morgan = require('morgan')
 
 const Data = [
     { 
@@ -25,6 +26,14 @@ const Data = [
     }
 ]
 
+app.use(express.json())
+
+
+morgan.token('body', (req) => {
+  return JSON.stringify(req.body)
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/api/person', (request, response) => {
     response.json(Data)
@@ -39,14 +48,13 @@ app.get('/api/info', (request, response) => {
 app.get('/api/person/:id', (request, response) => {
   const id = request.params.id
   const person = Data.find(person => person.id === id)
-  console.log(person)
+
   if (person){
     response.json(person)
   }
   else{
     response.status(404).send('<h1>Person not found</h1>')
   }
-
 })
 
 
@@ -82,5 +90,6 @@ app.post('/api/person', (request, response) => {
   }
 })
 
-
-app.listen(3001)
+app.listen(3001, () => {
+    console.log('Server is running on port 3001')
+})

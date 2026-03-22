@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const base_url = 'http://localhost:3001/persons'
+const base_url = 'https://phonebook-backend-ed2h.onrender.com/api/persons'
 
 const getALL = () => {
     const request = axios.get(base_url)

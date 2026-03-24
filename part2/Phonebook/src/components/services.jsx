@@ -14,7 +14,7 @@ const addNotes = (data) => {
 }
 
 const updateNotes = (id, data) => {
-    const request = axios.patch( `${base_url}/${id}`, data)
+    const request = axios.put(`${base_url}/${id}`, data)
     return request
 
 }

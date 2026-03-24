@@ -41,7 +41,8 @@ const App = () => {
     event.preventDefault()
     if (persons.some(person => person.name === newName)) {
       const personToUpdate = persons.find(person => person.name === newName)
-      services.updateNotes(personToUpdate.id, { number: newNumber })
+      const updatedPerson = { ...personToUpdate, number: newNumber }
+      services.updateNotes(personToUpdate.id, updatedPerson)
         .then(response => {
           setPersons(persons.map(person => person.id !== personToUpdate.id ? person : response.data))
           setNotification({ message: `Updated ${newName}`, type: 'success' })
@@ -50,14 +51,16 @@ const App = () => {
           setTimeout(() => setNotification(null), 5000)
         })
         .catch(error => {
-          setNotification({ message: `Information of ${newName} has already been removed from server`, type: 'error' })
-          setPersons(persons.filter(p => p.id !== personToUpdate.id))
+          if (error?.response?.status === 404) {
+            setNotification({ message: `Information of ${newName} has already been removed from server`, type: 'error' })
+            setPersons(persons.filter(p => p.id !== personToUpdate.id))
+          } else {
+            setNotification({ message: `Failed to update ${newName}`, type: 'error' })
+          }
           setTimeout(() => setNotification(null), 5000)
         })
       return
     }
-    
-    const newPerson = { name: newName, number: newNumber }
     
     services.addNotes({
       name: newName,

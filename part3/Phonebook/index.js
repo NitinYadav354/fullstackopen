@@ -1,8 +1,12 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
+const Person = require('./models/person')
 
 const morgan = require('morgan')
 const cors = require('cors')
+
+
 
 app.use(cors({
   origin: '*',
@@ -10,28 +14,30 @@ app.use(cors({
   allowedHeaders: 'Content-Type',
 }))
 
-const Data = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+
+
+// const Data = [
+//     { 
+//       "id": "1",
+//       "name": "Arto Hellas", 
+//       "number": "040-123456"
+//     },
+//     { 
+//       "id": "2",
+//       "name": "Ada Lovelace", 
+//       "number": "39-44-5323523"
+//     },
+//     { 
+//       "id": "3",
+//       "name": "Dan Abramov", 
+//       "number": "12-43-234345"
+//     },
+//     { 
+//       "id": "4",
+//       "name": "Mary Poppendieck", 
+//       "number": "39-23-6423122"
+//     }
+// ]
 
 app.use(express.json())
 
@@ -43,7 +49,9 @@ morgan.token('body', (req) => {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/api/person', (request, response) => {
-    response.json(Data)
+  Person.find({}).then(result => {
+    response.json(result)
+  })
 })
 
 app.get('/api/info', (request, response) => {
@@ -84,15 +92,13 @@ app.post('/api/person', (request, response) => {
   else{
     
     const newPerson = {
-      id: Math.floor(Math.random() * 1000000).toString(),
       name: body.name,
       number: body.number
     }
-    if (Data.find(p => p.name.toLowerCase() === newPerson.name.toLowerCase())) {
-      return response.status(400).json({ error: 'Name must be unique' })
-    }
-    Data.push(newPerson)
-    response.status(201).json(newPerson)
+    const person = new Person(newPerson)
+    person.save().then(result => {
+      response.status(201).json(result)
+    })
 
   }
 })

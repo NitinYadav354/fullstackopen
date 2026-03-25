@@ -1,12 +1,13 @@
+const path = require('path')
 require('dotenv').config()
 const express = require('express')
+
 const app = express()
+app.use(express.static('dist'))
 const Person = require('./models/person')
 
 const morgan = require('morgan')
 const cors = require('cors')
-
-
 
 app.use(cors({
   origin: '*',
@@ -14,9 +15,7 @@ app.use(cors({
   allowedHeaders: 'Content-Type',
 }))
 
-
 app.use(express.json())
-
 
 morgan.token('body', (req) => {
   return JSON.stringify(req.body)
@@ -30,11 +29,12 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }
+  if (error.name == 'ValidationError'){
+    return response.status(400).json({error: error.message})
+  }
 
   next(error)
 }
-
-app.use(errorHandler)
 
 app.get('/api/person', (request, response) => {
   Person.find({}).then(result => {
@@ -43,11 +43,11 @@ app.get('/api/person', (request, response) => {
 })
 
 app.get('/api/info', (request, response) => {
-    Person.find({}).then(person => {
-      const output = `Phonebook has info for ${person.length} people`
-      const date = new Date()
-      response.send(output + '<br></br>' + date)
-    })
+  Person.find({}).then(person => {
+    const output = `Phonebook has info for ${person.length} people`
+    const date = new Date()
+    response.send(output + '<br></br>' + date)
+  })
 })
 
 app.get('/api/person/:id', (request, response) => {
@@ -60,17 +60,16 @@ app.get('/api/person/:id', (request, response) => {
   })
 })
 
-
 app.delete('/api/person/:id', (request, response, next) => {
   const id = request.params.id
   Person.findByIdAndDelete(id)
-  .then(result => {
-    if (result) {
-      response.status(204).end()
-    }
-  })
-  .catch(error => next(error))  
-  })
+    .then(result => {
+      if (result) {
+        response.status(204).end()
+      }
+    })
+    .catch(error => next(error))
+})
 
 app.put('/api/person/:id', (request, response, next) => {
   const id = request.params.id
@@ -92,13 +91,12 @@ app.put('/api/person/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/person', (request, response) => {
+app.post('/api/person', (request, response, next) => {
   const body = request.body
   if (!body.name || !body.number) {
     return response.status(400).json({ error: 'Name and number are required' })
-  }
-  else{
-    
+  } else {
+
     const newPerson = {
       name: body.name,
       number: body.number
@@ -107,9 +105,16 @@ app.post('/api/person', (request, response) => {
     person.save().then(result => {
       response.status(201).json(result)
     })
-
+    .catch(error => next(error))
   }
 })
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

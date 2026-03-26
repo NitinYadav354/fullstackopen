@@ -13,6 +13,21 @@ const App = () => {
   const [search, setSearch] = useState('')
   const [notification, setNotification] = useState(null)
 
+  const getApiErrorMessage = (error, fallbackMessage) => {
+    const apiError = error?.response?.data?.error
+    const genericMessage = error?.message
+
+    if (apiError) {
+      return apiError
+    }
+
+    if (genericMessage) {
+      return genericMessage
+    }
+
+    return fallbackMessage
+  }
+
   useEffect(() => {
     services.getALL()
       .then(response => setPersons(response.data))
@@ -54,9 +69,12 @@ const App = () => {
           if (error?.response?.status === 404) {
             setNotification({ message: `Information of ${newName} has already been removed from server`, type: 'error' })
             setPersons(persons.filter(p => p.id !== personToUpdate.id))
+          } else if (error?.response?.status === 400) {
+            setNotification({ message: `Validation error: ${getApiErrorMessage(error, 'Request validation failed')}`, type: 'error' })
           } else {
-            setNotification({ message: `Failed to update ${newName}`, type: 'error' })
+            setNotification({ message: `Failed to update ${newName}: ${getApiErrorMessage(error, 'Unknown server error')}`, type: 'error' })
           }
+
           setTimeout(() => setNotification(null), 5000)
         })
       return
@@ -71,6 +89,15 @@ const App = () => {
         setNotification({ message: `Added ${newName}`, type: 'success' })
         setNewName('')
         setNewNumber('')
+        setTimeout(() => setNotification(null), 5000)
+      })
+      .catch(error => {
+        if (error?.response?.status === 400) {
+          setNotification({ message: `Validation error: ${getApiErrorMessage(error, 'Request validation failed')}`, type: 'error' })
+        } else {
+          setNotification({ message: `Failed to add ${newName}: ${getApiErrorMessage(error, 'Unknown server error')}`, type: 'error' })
+        }
+
         setTimeout(() => setNotification(null), 5000)
       })
   }

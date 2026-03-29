@@ -4,14 +4,15 @@
   "description": "fullstackopen part4 Blog app",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "dev": "node --watch index.js"
   },
   "author": "Nitin Yadav",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "lodash": "^4.17.23",
     "mongodb": "^7.1.1",
     "mongoose": "^9.3.3"
   }

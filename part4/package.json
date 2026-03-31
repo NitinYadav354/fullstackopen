@@ -4,16 +4,22 @@
   "description": "fullstackopen part4 Blog app",
   "main": "index.js",
   "scripts": {
-    "test": "node --test",
-    "dev": "node --watch index.js"
+    "test:only": "cross-env NODE_ENV=test node --test --test-only",
+    "start": "cross-env NODE_ENV=Production node index.js",
+    "test": "cross-env NODE_ENV=test node --test",
+    "dev": "cross-env NODE_ENV=Development node --watch index.js"
   },
   "author": "Nitin Yadav",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "lodash": "^4.17.23",
     "mongodb": "^7.1.1",
     "mongoose": "^9.3.3"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2"
   }
 }

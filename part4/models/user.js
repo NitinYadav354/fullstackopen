@@ -1,4 +1,3 @@
-const { uniq } = require('lodash');
 const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema(
@@ -14,7 +13,13 @@ const userSchema = mongoose.Schema(
             required: true
         },
         name: String,
-        
+        blogs: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Blog'
+            }
+        ]
+
     },
     { autoIndex: true }
 )

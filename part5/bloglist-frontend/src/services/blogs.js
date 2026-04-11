@@ -11,4 +11,13 @@ const post = async (newObject, config) => {
   return request.data
 }
 
-export default { getAll, post }
+const put = async (id, updatedObject, config) => {
+  const request = await axios.put(`${baseUrl}/${id}`, updatedObject, config)
+  return request.data
+}
+
+const deleteBlog = async (id, config) => {
+  await axios.delete(`${baseUrl}/${id}`, config)
+}
+
+export default { getAll, post, put, delete: deleteBlog }

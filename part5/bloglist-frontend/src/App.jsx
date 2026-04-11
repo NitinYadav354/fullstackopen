@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import login from './services/login'
 import Notification from './components/Notification'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Toggleable'
 
 
 const App = () => {
@@ -12,6 +14,7 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
   const [message, setMessage] = useState('')
+  const blogFormRef = useRef()
 
 
   useEffect(() => {
@@ -68,11 +71,8 @@ const loginForm = () => (
   </div>
 )
 
-const createBlog = async (event) => {
-  event.preventDefault()
-  const title = event.target.title.value
-  const author = event.target.author.value
-  const url = event.target.url.value
+const createBlog = async ({ title, author, url }) => {
+  console.log('STEP 2: [App] Received the data package from BlogForm:', { title, author, url })
   const config = {
     headers: {
       Authorization: `Bearer ${token}` 
@@ -90,6 +90,7 @@ const createBlog = async (event) => {
     setTimeout(() => {
       setMessage('')
     }, 5000);
+    blogFormRef.current?.toggleVisibility()
   } catch  {
     setMessage('Error creating blog')
     setTimeout(() => {
@@ -98,6 +99,42 @@ const createBlog = async (event) => {
   }
 }
 
+const handleDelete = async (blog) => {
+    const config = {
+    headers: {
+      Authorization: `Bearer ${token}` 
+    }
+  };
+  if (window.confirm(`Are you sure you want to delete ${blog.title} by ${blog.author}?`)) {
+      await blogService.delete(blog.id, config)
+      setBlogs(blogs.filter(b => b.id !== blog.id))
+    }
+
+}
+
+const handleLikes = async (blog) => {
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}` 
+    }
+  };
+  const newBlog = {
+    title: blog.title,
+    author: blog.author,
+    url: blog.url,
+    likes: blog.likes + 1
+  }
+  try {
+  const returnedBlog = await blogService.put(blog.id, newBlog, config)
+  setBlogs(blogs.map(b => b.id === blog.id ? returnedBlog : b))
+  } catch  {
+    setMessage('Error liking blog')
+    setTimeout(() => {
+      setMessage('')
+    }, 5000);
+  }
+}
 
 const blogForm = () => (
      <div>
@@ -108,35 +145,20 @@ const blogForm = () => (
         window.localStorage.removeItem('loggedBlogappUser')
       }}>Logout</button>
       <br />
-      <h1>Create new blog</h1>
-      <form onSubmit={createBlog}>
-        <div>
-          <label>
-            title{' '}
-            <input type="text" name='title' />
-          </label>
-        </div>
-        <div>
-          <label>
-            author{' '}
-            <input type="text" name='author' />
-          </label>
-        </div>
-        <div>
-          <label>
-            url{' '}
-            <input type="text" name='url' />
-          </label>
-        </div>
-        <button type="submit">Create</button>
-      </form>
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <h1>Create new blog</h1>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
       
       <h2>blogs</h2>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+      {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
+        <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleDelete={handleDelete}/>
       )}
-    </div>
+     </div>
 )
+
+
+
 
   if (user === null) {
     return (

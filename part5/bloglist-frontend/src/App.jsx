@@ -26,7 +26,7 @@ const App = () => {
     }
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   const handleLogin = async (event) => {
@@ -42,102 +42,101 @@ const App = () => {
       setMessage('Wrong credentials')
       setTimeout(() => {
         setMessage('')
-      }, 5000);
+      }, 5000)
     }
     console.log('logging in with', username, password)
-    
-}
+  }
 
-const loginForm = () => (
-  <div>
-  <h2>Log in to application</h2>
-  {message && <Notification message={message} />}
-        <form onSubmit={handleLogin}>
-                <div>
-                  <label>
+  const loginForm = () => (
+    <div>
+      <h2>Log in to application</h2>
+      {message && <Notification message={message} />}
+      <form onSubmit={handleLogin}>
+        <div>
+          <label>
                     username{' '}
-                    <input type="text" value={username} onChange={({target}) => setUsername(target.value)} />
-                    </label>
-                </div>
-                <div>
-                  
-                    <label>
+            <input type="text" value={username} onChange={({ target }) => setUsername(target.value)} />
+          </label>
+        </div>
+        <div>
+
+          <label>
                         password{' '}
-                        <input type="password" value={password} onChange={({target}) => setPassword(target.value)} />
-                    </label>
-                </div>
-                <button type="submit">Login</button>
-            </form>
-  </div>
-)
+            <input type="password" value={password} onChange={({ target }) => setPassword(target.value)} />
+          </label>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  )
 
-const createBlog = async ({ title, author, url }) => {
-  console.log('STEP 2: [App] Received the data package from BlogForm:', { title, author, url })
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}` 
-    }
-  };
-  const newBlog = {
-    title,
-    author,
-    url
-  }
-  try {
-  const returnedBlog = await blogService.post(newBlog, config)
-  setBlogs(blogs.concat(returnedBlog))
-      setMessage(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
-    setTimeout(() => {
-      setMessage('')
-    }, 5000);
-    blogFormRef.current?.toggleVisibility()
-  } catch  {
-    setMessage('Error creating blog')
-    setTimeout(() => {
-      setMessage('')
-    }, 5000);
-  }
-}
-
-const handleDelete = async (blog) => {
+  const createBlog = async ({ title, author, url }) => {
+    console.log('STEP 2: [App] Received the data package from BlogForm:', { title, author, url })
     const config = {
-    headers: {
-      Authorization: `Bearer ${token}` 
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
-  };
-  if (window.confirm(`Are you sure you want to delete ${blog.title} by ${blog.author}?`)) {
+    const newBlog = {
+      title,
+      author,
+      url
+    }
+    try {
+      const returnedBlog = await blogService.post(newBlog, config)
+      setBlogs(blogs.concat(returnedBlog))
+      setMessage(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
+      setTimeout(() => {
+        setMessage('')
+      }, 5000)
+      blogFormRef.current?.toggleVisibility()
+    } catch  {
+      setMessage('Error creating blog')
+      setTimeout(() => {
+        setMessage('')
+      }, 5000)
+    }
+  }
+
+  const handleDelete = async (blog) => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+    if (window.confirm(`Are you sure you want to delete ${blog.title} by ${blog.author}?`)) {
       await blogService.delete(blog.id, config)
       setBlogs(blogs.filter(b => b.id !== blog.id))
     }
 
-}
+  }
 
-const handleLikes = async (blog) => {
+  const handleLikes = async (blog) => {
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}` 
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }
-  };
-  const newBlog = {
-    title: blog.title,
-    author: blog.author,
-    url: blog.url,
-    likes: blog.likes + 1
+    const newBlog = {
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: blog.likes + 1
+    }
+    try {
+      const returnedBlog = await blogService.put(blog.id, newBlog, config)
+      setBlogs(blogs.map(b => b.id === blog.id ? returnedBlog : b))
+    } catch  {
+      setMessage('Error liking blog')
+      setTimeout(() => {
+        setMessage('')
+      }, 5000)
+    }
   }
-  try {
-  const returnedBlog = await blogService.put(blog.id, newBlog, config)
-  setBlogs(blogs.map(b => b.id === blog.id ? returnedBlog : b))
-  } catch  {
-    setMessage('Error liking blog')
-    setTimeout(() => {
-      setMessage('')
-    }, 5000);
-  }
-}
 
-const blogForm = () => (
-     <div>
+  const blogForm = () => (
+    <div>
       {message && <Notification message={message} />}
       <p>{user.name} logged in</p>
       <button onClick={() => {
@@ -149,13 +148,13 @@ const blogForm = () => (
         <h1>Create new blog</h1>
         <BlogForm createBlog={createBlog} />
       </Togglable>
-      
+
       <h2>blogs</h2>
       {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
         <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleDelete={handleDelete}/>
       )}
-     </div>
-)
+    </div>
+  )
 
 
 

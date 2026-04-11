@@ -26,7 +26,7 @@ const Blog = ({ blog, handleLikes, handleDelete }) => {
         </div>
       )}
 
-    </div>  
+    </div>
   )
 }
 
